@@ -1,7 +1,8 @@
 #!/bin/bash 
-#File: yum-repo-splunk-create-or-update.sh
-#Author: Justin Hochstetler (justin@grangerx.com)
-#Version: 2022.02.24.A
+#File: yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh
+#Original Author: Justin Hochstetler (justin@grangerx.com)
+#Modified by: Tin Tin Trinh (tin.tin.trinh@atea.no)
+#Version: 2022.09.26 prompt for splunk.com credentials 
 
 PASSFILESPEC=~/.yum-repo-splunk
 
@@ -38,24 +39,29 @@ SPLUNKUSER=PUTSPLUNKDOTCOMUSERNAMEHERE
 SPLUNKPASS=PUTSPLUNKDOTCOMPASSWORDHERE
 # -^- Content of file ${PASSFILESPEC} should be
 
+echo "Please enter your splunk.com credentials, starting with username:"
+read SPLUNKUSER
+echo "please enter splunk.com pasword:"
+read -s SPLUNKPASS
+
 #Source the file if it exists:
-if [ -f ${PASSFILESPEC} ]; then
-	#echo "Sourcing ${PASSFILESPEC}"
-	source ${PASSFILESPEC}
-else
-	echo "Please validate that file ${PASSFILESPEC} exists, and contains lines for SPLUNKUSER= and SPLUNKPASS= ."
-fi
+# if [ -f ${PASSFILESPEC} ]; then
+# 	#echo "Sourcing ${PASSFILESPEC}"
+# 	source ${PASSFILESPEC}
+# else
+# 	echo "Please validate that file ${PASSFILESPEC} exists, and contains lines for SPLUNKUSER= and SPLUNKPASS= ."
+# fi
 
 #Validate that the sourced file did set SPLUNKUSER and SPLUNKPASS variables:
 if [[ -z "${SPLUNKUSER}" || -z "${SPLUNKPASS}" ]]; then
 	echo "SPLUNKUSER or SPLUNKPASS variable is unset."
-	echo "Please validate that file ${PASSFILESPEC} exists, and contains lines for SPLUNKUSER= and SPLUNKPASS= ."
+	echo "Please supply splunk.com credentials. Needed to download Splunk installation files"
 	exit 1 
 fi
 
 #Validate that the sourced file is not using the dummy values, though:
 if [[ "${SPLUNKUSER}" == "PUTSPLUNKDOTCOMUSERNAMEHERE" || "${SPLUNKPASS}" == "PUTSPLUNKDOTCOMPASSWORDHERE" ]]; then
-	echo "SPLUNKUSER or SPLUNKPASS in ${PASSFILESPEC} is not properly set."
+	echo "SPLUNKUSER or SPLUNKPASS is not properly set."
 	exit 1
 fi
 
@@ -427,3 +433,7 @@ done
 #echo -e "CRIT: ${BUFFER_CRIT}"
 #echo -e "ALERT: ${BUFFER_ALERT}"
 #echo -e "EMERG: ${BUFFER_EMERG}"
+
+
+#reload yum repository file lists
+yum clean expire-cache
