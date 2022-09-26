@@ -1,0 +1,3 @@
+# list splunk UF versions to download
+9.0.1
+8.1.10

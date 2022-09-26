@@ -168,8 +168,10 @@ fnCHECKUTIL "/bin/mail" "mailx" "#yum install mailx"
 
 #declare an associative array where each key is the repo name/dir and the value is the url to download from:
 declare -A SPLUNK_RPM_HTTP_DL_URL
-SPLUNK_RPM_HTTP_DL_URL+=([splunk-enterprise]="https://www.splunk.com/en_us/download/splunk-enterprise.html#")
+#SPLUNK_RPM_HTTP_DL_URL+=([splunk-enterprise]="https://www.splunk.com/en_us/download/splunk-enterprise.html#")
 SPLUNK_RPM_HTTP_DL_URL+=([splunk-universal-forwarder]="https://www.splunk.com/en_us/download/universal-forwarder.html#")
+# not working, because overwrites latest url above...
+#SPLUNK_RPM_HTTP_DL_URL+=([splunk-universal-forwarder]="https://www.splunk.com/en_us/download/previous-releases-universal-forwarder.html#")
 
 
 
@@ -273,6 +275,26 @@ function fnGetThePkg() {
 	fi
 }
 
+#CREATEREGEXSTRING function
+function fnCreateRegexString (){
+    parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+    cd "$parent_path"
+
+    # Text file containing Splunk UF versions to download
+    splunk_UF_versions=$(cat ./splunk_UF_versions_to_Download.txt | grep -v "^#")
+
+    # versionFilter is a regex string, to be used in grep 
+    versionFilter=""
+    for version in $splunk_UF_versions;
+        do versionFilter+="$version\/|";
+    done
+    #pop last pipe in string, else everything is matched
+    versionFilter=${versionFilter::-1}
+
+    #returns
+    echo $versionFilter
+}
+
 # -v- Main:
 
 
@@ -284,6 +306,9 @@ trap finish EXIT
 
 #create the directory if it doesn't exist:
 fnCreateDir "${SPLUNK_REPO_PATH_BASE}" "File Repositories BasePath"
+
+#create regex string to filter out versions to download
+splunk_uf_version_filter=$(fnCreateRegexString)
 
 #for each dl_url, process the url, find the true url, and download it.
 for repo_name in "${!SPLUNK_RPM_HTTP_DL_URL[@]}"
@@ -298,11 +323,18 @@ do
 	#get the content of the page of the url:
 	DL_PAGE_CONTENT=$( curl --user ${SPLUNKUSER}:${SPLUNKPASS} -s "${dl_url}" )
 
+	#if reponame is splunk-niversal forwarder, fetch urls of previous releases as well
+	if [ $repo_name == "splunk-universal-forwarder" ]; then
+		DL_PAGE_CONTENT+=$( curl --user ${SPLUNKUSER}:${SPLUNKPASS} -s "https://www.splunk.com/en_us/download/previous-releases-universal-forwarder.html#" )
+	fi
+
+	# then filter out what versions to download with mapfile below
+
 
 	#parse the actual package(s) and checksum(s) download location(s) from the page content:
 	#use mapfile to read DL_LINKS and CHECKSUM_LINKS into arrays, with each element a line
-	mapfile -t DL_LINKS <<< "$(echo "${DL_PAGE_CONTENT}" | grep "data-file" | grep x86_64.rpm | sed 's/.*data-link="\([^"]*\)".*/\1/g')"
-	mapfile -t CHECKSUM_LINKS <<< "$(echo "${DL_PAGE_CONTENT}" | grep "data-sha512" | grep x86_64.rpm | sed 's/.*data-sha512="\([^"]*\)".*/\1/g')"
+	mapfile -t DL_LINKS <<< "$(echo "${DL_PAGE_CONTENT}" | grep "data-file" | grep x86_64.rpm | sed 's/.*data-link="\([^"]*\)".*/\1/g' | grep -E $splunk_uf_version_filter )"
+	mapfile -t CHECKSUM_LINKS <<< "$(echo "${DL_PAGE_CONTENT}" | grep "data-sha512" | grep x86_64.rpm | sed 's/.*data-sha512="\([^"]*\)".*/\1/g' | grep -E $splunk_uf_version_filter )"
 		
 	#get the count of DL links and display it, just to give some info on what is being seen by the script.
 	DL_LINKS_COUNT=${#DL_LINKS[@]} ; CHECKSUM_LINKS_COUNT=${#CHECKSUM_LINKS[@]} 
