@@ -2,15 +2,17 @@
 
 cd $( dirname "$(readlink -f "$0")" )
 
-echo "cp -a ./usr/local/bin/yum-repo-splunk-create-or-update.sh /usr/local/bin/yum-repo-splunk-create-or-update.sh :"
-cp -a ./usr/local/bin/yum-repo-splunk-create-or-update.sh /usr/local/bin/yum-repo-splunk-create-or-update.sh
+echo "cp -a ./usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh /usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh :"
+#cp -a ./usr/local/bin/yum-repo-splunk-create-or-update.sh /usr/local/bin/yum-repo-splunk-create-or-update.sh
+cp -a ./usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh /usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh
 
 echo "cp -a ./etc/cron.d/yum_repo_splunk /etc/cron.d/yum_repo_splunk :"
 cp -a ./etc/cron.d/yum_repo_splunk /etc/cron.d/yum_repo_splunk
 
 echo "set selinux attributes:"
 chcon system_u:object_r:system_cron_spool_t:s0 /etc/cron.d/yum_repo_splunk
-chcon system_u:object_r:bin_t:s0 /usr/local/bin/yum-repo-splunk-create-or-update.sh
+#chcon system_u:object_r:bin_t:s0 /usr/local/bin/yum-repo-splunk-create-or-update.sh
+chcon system_u:object_r:bin_t:s0 /usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh
 
 echo "yum install needed prerequisites:"
 yum install createrepo coreutils curl
