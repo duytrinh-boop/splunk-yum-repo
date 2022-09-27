@@ -5,11 +5,15 @@ cd $( dirname "$(readlink -f "$0")" )
 echo "cp -a ./usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh /usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh :"
 cp -a ./usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh /usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh
 
+echo "cp -a ./usr/local/bin/splunk_UF_versions_to_Download.txt /usr/local/bin/splunk_UF_versions_to_Download.txt :"
+cp -a ./usr/local/bin/splunk_UF_versions_to_Download.txt /usr/local/bin/splunk_UF_versions_to_Download.txt
+
+
 echo "set selinux attributes:"
 chcon system_u:object_r:bin_t:s0 /usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh
 
 echo "yum install needed prerequisites:"
-yum install createrepo coreutils curl mailx
+yum install createrepo coreutils curl mailx -y
 
 #prompt for splunk.com credentials instead of saving to file.
 
