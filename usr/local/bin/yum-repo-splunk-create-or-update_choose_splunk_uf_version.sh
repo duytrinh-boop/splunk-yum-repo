@@ -40,14 +40,18 @@ NEW_PKG_CT=0
 #For Username and Password, place those in a file at path ${PASSFILESPEC}
 #NOTE: For the SPLUNKUSER and SPLUNKPASS, use the ones that have been registered with www.splunk.com, to allow downloads of their packages:
 # -v- Content of file ${PASSFILESPEC} should be
-SPLUNKUSER=PUTSPLUNKDOTCOMUSERNAMEHERE
-SPLUNKPASS=PUTSPLUNKDOTCOMPASSWORDHERE
+# SPLUNKUSER=PUTSPLUNKDOTCOMUSERNAMEHERE
+# SPLUNKPASS=PUTSPLUNKDOTCOMPASSWORDHERE
+
+# doesn't seem like you need a valid user to actually get the urls...
+SPLUNKUSER=dummyCredentialSplunkUSER
+SPLUNKPASS=dummyCredentialSplunkPASS
 # -^- Content of file ${PASSFILESPEC} should be
 
-echo "Please enter your splunk.com credentials, starting with username:"
-read SPLUNKUSER
-echo "please enter splunk.com pasword:"
-read -s SPLUNKPASS
+# echo "Please enter your splunk.com credentials, starting with username:"
+# read SPLUNKUSER
+# echo "please enter splunk.com pasword:"
+# read -s SPLUNKPASS
 
 #Source the file if it exists:
 # if [ -f ${PASSFILESPEC} ]; then
@@ -78,36 +82,7 @@ SPLUNK_REPO_PATH_BASE="/opt/yumrepos/splunk"
 
 
 #---------------------------------------
-#-v- function fnBUFFER
-#---------------------------------------
-function fnBUFFER() {
-	local msglevel="${1}"
-	local bitfield_includeinsummary="${2}"
-	local content="${3}"
-	local msglvlnum=7
-
-#BUFFER_EMERG=""; BUFFER_ALERT=""; BUFFER_CRIT=""; BUFFER_ERROR=""; BUFFER_WARNING=""; BUFFER_NOTICE=""; BUFFER_INFO=""; BUFFER_DEBUG=""
-	case "${msglevel}" in
-		"DEBUG")
-			msglvlnum=7
-			BUFFER_DEBUG+="${content}\n"
-			;;
-		"INFO")
-			msglvlnum=6
-			BUFFER_INFO+="${content}\n"
-			;;
-		"NOTICE")
-			msglvlnum=5
-			BUFFER_NOTICE+="${content}\n"
-			;;
-		"WARNING")
-			msglvlnum=4
-			BUFFER_WARNING+="${content}\n"
-			;;
-		"ERROR")
-			msglvlnum=3
-			BUFFER_ERROR+="${content}\n"
-			;;
+#-v- function fnBUFFERecho
 		"CRIT")
 			msglvlnum=2
 			BUFFER_CRIT+="${content}\n"
