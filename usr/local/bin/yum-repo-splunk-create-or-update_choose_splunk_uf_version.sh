@@ -314,7 +314,7 @@ function fnCreateRegexString (){
     #pop last pipe in string, else everything is matched
 
 	#catch
-	if [[ $versionFilter =~ [[:space:]]* ]]; then
+	if [[ $versionFilter =~ ^[[:space:]]*$ ]]; then
 		echo "Splunk UF version not specified. Empty file"
 		echo "Splunk version must be stated in format [0-9]+\.[0-9]+\.[0-9]\+, in file $parent_path/splunk_UF_versions_to_Download.txt"
 		echo "Example of valid format is 9.1.0"
