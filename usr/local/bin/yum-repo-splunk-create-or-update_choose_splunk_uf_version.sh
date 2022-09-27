@@ -367,7 +367,6 @@ do
 	mapfile -t DL_LINKS <<< "$(echo "${DL_PAGE_CONTENT}" | grep "data-file" | grep x86_64.rpm | sed 's/.*data-link="\([^"]*\)".*/\1/g' | grep -E $splunk_uf_version_filter )"
 	mapfile -t CHECKSUM_LINKS <<< "$(echo "${DL_PAGE_CONTENT}" | grep "data-sha512" | grep x86_64.rpm | sed 's/.*data-sha512="\([^"]*\)".*/\1/g' | grep -E $splunk_uf_version_filter )"
 
-	echo $DL_LINKS
 
 	#get the count of DL links and display it, just to give some info on what is being seen by the script.
 	DL_LINKS_COUNT=${#DL_LINKS[@]} ; CHECKSUM_LINKS_COUNT=${#CHECKSUM_LINKS[@]} 
