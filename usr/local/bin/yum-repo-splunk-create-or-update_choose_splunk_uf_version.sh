@@ -4,6 +4,11 @@
 #Modified by: Tin Tin Trinh (tin.tin.trinh@atea.no)
 #Version: 2022.09.26 prompt for splunk.com credentials 
 
+#Script is modified to only download Splunk Universal Forwarder RPM files.
+#You can now specify which version you want to download, in /usr/local/bin/splunk_UF_versions_to_Download.txt
+
+# new function fnCreateRegexString 
+
 PASSFILESPEC=~/.yum-repo-splunk
 
 #Set up for sending a summary email after processing:
@@ -281,28 +286,52 @@ function fnGetThePkg() {
 	fi
 }
 
-#CREATEREGEXSTRING function
+#CREATEREGEXSTRING function. Used to filter out which versions to download
 function fnCreateRegexString (){
     parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
     cd "$parent_path"
 
     # Text file containing Splunk UF versions to download
     splunk_UF_versions=$(cat ./splunk_UF_versions_to_Download.txt | grep -v "^#")
-
+	
     # versionFilter is a regex string, to be used in grep 
     versionFilter=""
-    for version in $splunk_UF_versions;
-        do versionFilter+="$version\/|";
+
+	#regex matching, to see if version is on format digit.digit.digit
+    for version in $splunk_UF_versions; do 
+			if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; 
+		then 
+			versionFilter+="$version\/|"
+			echo $version "successfully matched"
+		else
+			echo "Splunk version must be stated in format [0-9]+\.[0-9]+\.[0-9]\+, in file $parent_path/splunk_UF_versions_to_Download.txt"
+			echo "instead found $version. "
+			echo "Example of valid format is 9.1.0"
+			echo "Fix version format and try again."
+			exit 1
+		fi
     done
     #pop last pipe in string, else everything is matched
-    versionFilter=${versionFilter::-1}
+
+	#catch
+	if [[ $versionFilter =~ [[:space:]]* ]]; then
+		echo "Splunk UF version not specified. Empty file"
+		echo "Splunk version must be stated in format [0-9]+\.[0-9]+\.[0-9]\+, in file $parent_path/splunk_UF_versions_to_Download.txt"
+		echo "Example of valid format is 9.1.0"
+		echo "Add versions to download and try again."
+		exit 1
+	else
+    	versionFilter=${versionFilter::-1}
+	fi
 
     #returns
     echo $versionFilter
 }
-
+fnCreateRegexString
 # -v- Main:
 
+#create regex string to filter out versions to download
+splunk_uf_version_filter=$(fnCreateRegexString)
 
 #create the temp dl path if it doesn't exist:
 fnCreateDir "${SPLUNK_DL_TEMP_LOC}" "Temp file Download Folder"
@@ -313,8 +342,6 @@ trap finish EXIT
 #create the directory if it doesn't exist:
 fnCreateDir "${SPLUNK_REPO_PATH_BASE}" "File Repositories BasePath"
 
-#create regex string to filter out versions to download
-splunk_uf_version_filter=$(fnCreateRegexString)
 
 #for each dl_url, process the url, find the true url, and download it.
 for repo_name in "${!SPLUNK_RPM_HTTP_DL_URL[@]}"
