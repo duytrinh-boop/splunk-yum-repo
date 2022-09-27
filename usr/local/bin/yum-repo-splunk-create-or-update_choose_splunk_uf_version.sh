@@ -12,7 +12,7 @@
 PASSFILESPEC=~/.yum-repo-splunk
 
 #Set up for sending a summary email after processing:
-MAIL_ENABLED="true"
+MAIL_ENABLED="false"
 #single-quoted template line, which will be eval echo ed to form final email subject. 
 MAIL_SUBJECT_TEMPLATE='[${STATUS_FINAL}] Splunk YUM Repo Update : $(hostname -f)'
 MAIL_TOADDR=root
@@ -327,11 +327,8 @@ function fnCreateRegexString (){
     #returns
     echo $versionFilter
 }
-fnCreateRegexString
 # -v- Main:
 
-#create regex string to filter out versions to download
-splunk_uf_version_filter=$(fnCreateRegexString)
 
 #create the temp dl path if it doesn't exist:
 fnCreateDir "${SPLUNK_DL_TEMP_LOC}" "Temp file Download Folder"
@@ -342,6 +339,8 @@ trap finish EXIT
 #create the directory if it doesn't exist:
 fnCreateDir "${SPLUNK_REPO_PATH_BASE}" "File Repositories BasePath"
 
+#create regex string to filter out versions to download
+splunk_uf_version_filter=$(fnCreateRegexString)
 
 #for each dl_url, process the url, find the true url, and download it.
 for repo_name in "${!SPLUNK_RPM_HTTP_DL_URL[@]}"
