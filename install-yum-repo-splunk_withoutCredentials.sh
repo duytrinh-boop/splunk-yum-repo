@@ -9,7 +9,7 @@ echo "set selinux attributes:"
 chcon system_u:object_r:bin_t:s0 /usr/local/bin/yum-repo-splunk-create-or-update_choose_splunk_uf_version.sh
 
 echo "yum install needed prerequisites:"
-yum install createrepo coreutils curl
+yum install createrepo coreutils curl mailx
 
 #prompt for splunk.com credentials instead of saving to file.
 
