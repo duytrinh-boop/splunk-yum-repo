@@ -1,3 +1,7 @@
-# list splunk UF versions to download
+#list splunk UF versions to download
+#Must be complete version number in format
+#{digit}.{digit}.{digit}
+#for example 
+#9.0.1
 9.0.1
 8.1.10
