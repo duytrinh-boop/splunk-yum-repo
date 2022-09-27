@@ -302,7 +302,6 @@ function fnCreateRegexString (){
 			if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; 
 		then 
 			versionFilter+="$version\/|"
-			echo $version "successfully matched"
 		else
 			echo "Splunk version must be stated in format [0-9]+\.[0-9]+\.[0-9]\+, in file $parent_path/splunk_UF_versions_to_Download.txt"
 			echo "instead found $version. "
@@ -367,7 +366,9 @@ do
 	#use mapfile to read DL_LINKS and CHECKSUM_LINKS into arrays, with each element a line
 	mapfile -t DL_LINKS <<< "$(echo "${DL_PAGE_CONTENT}" | grep "data-file" | grep x86_64.rpm | sed 's/.*data-link="\([^"]*\)".*/\1/g' | grep -E $splunk_uf_version_filter )"
 	mapfile -t CHECKSUM_LINKS <<< "$(echo "${DL_PAGE_CONTENT}" | grep "data-sha512" | grep x86_64.rpm | sed 's/.*data-sha512="\([^"]*\)".*/\1/g' | grep -E $splunk_uf_version_filter )"
-		
+
+	echo $DL_LINKS
+
 	#get the count of DL links and display it, just to give some info on what is being seen by the script.
 	DL_LINKS_COUNT=${#DL_LINKS[@]} ; CHECKSUM_LINKS_COUNT=${#CHECKSUM_LINKS[@]} 
 	fnBUFFER INFO 3 "${repo_name}: Pkgs found on remote site: ${DL_LINKS_COUNT}"
