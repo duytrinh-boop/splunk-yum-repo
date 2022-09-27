@@ -12,7 +12,7 @@
 PASSFILESPEC=~/.yum-repo-splunk
 
 #Set up for sending a summary email after processing:
-MAIL_ENABLED="false"
+MAIL_ENABLED=""
 #single-quoted template line, which will be eval echo ed to form final email subject. 
 MAIL_SUBJECT_TEMPLATE='[${STATUS_FINAL}] Splunk YUM Repo Update : $(hostname -f)'
 MAIL_TOADDR=root
