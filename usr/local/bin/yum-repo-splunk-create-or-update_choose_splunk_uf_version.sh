@@ -271,13 +271,15 @@ function fnGetThePkg() {
 
 	DL_RES=$( fnDownloadFile "${dl_link}" "${SPLUNK_DL_TEMP_LOC}" )
 	#echo "Checking local file checksum:"
-	local checksum_local=$( cd ${SPLUNK_DL_TEMP_LOC} ; sha512sum -b "${dl_rpm_name}" | sed -e "s/^\(.*\) \*\(.*\)/SHA512(\2)= \1/g" )
+	#local checksum_local=$( cd ${SPLUNK_DL_TEMP_LOC} ; sha512sum -b "${dl_rpm_name}" | sed -e "s/^\(.*\) \*\(.*\)/SHA512(\2)= \1/g" )
+	#fix checksum> compare value, not format
+	local checksum_local=$( cd ${SPLUNK_DL_TEMP_LOC} ; sha512sum -b "${dl_rpm_name}" | sed -r 's@.*([a-zA-Z0-9]{128}).*@\1@g' )
 	#Check the SHA512 checksum:
 	if [ "${checksum_remote}" == "${checksum_local}" ]; then
 		fnBUFFER INFO 0 "${repo_name}: Remote file downloaded and checksum validated: ${temp_fpspec}"
 		fnBUFFER INFO 0 "${repo_name}: Moving file to final location: ${SPLUNK_REPO_PATH_BASE}/${repo_name}"
 		mv "${SPLUNK_DL_TEMP_LOC}/${dl_rpm_name}" "${SPLUNK_REPO_PATH_BASE}/${repo_name}"
-		fnBUFFER INFO 3 "${repo_name}: File Downloaded: ${checksum_local}"
+		fnBUFFER INFO 3 "${repo_name}: File Downloaded: ${dl_rpm_name} :: ${checksum_local}"
 		let "NEW_PKG_CT+=1"
 		return 0
 	else
@@ -301,7 +303,8 @@ function fnCreateRegexString (){
 
 	#regex matching, to see if version is on format digit.digit.digit
     for version in $splunk_UF_versions; do 
-			if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; 
+			#if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; 
+			if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]];
 		then 
 			versionFilter+="$version\/|"
 		else
@@ -393,16 +396,20 @@ do
 
 		#download the checksum file for the file:
 		checksum_remote=$( curl --user ${SPLUNKUSER}:${SPLUNKPASS} -s "${checksum_link}" )
+		#fix: only read the checksum value, not checksum file format
+		checksum_remote=$( echo $checksum_remote | sed -r 's@.*([a-zA-Z0-9]{128}).*@\1@g')
 
 		#check if the file has already been successfully downloaded:
 		if [ -f ${this_pkg_rpm_final_fpspec} ]; then
 			fnBUFFER INFO 0 "Local file already exists: ${this_pkg_rpm_final_fpspec}"
 			#if downloaded, check the checksum:
-			checksum_local=$( cd ${repo_path} ; sha512sum -b "${dl_rpm_name}" | sed -e "s/^\(.*\) \*\(.*\)/SHA512(\2)= \1/g" )
+			#checksum_local=$( cd ${repo_path} ; sha512sum -b "${dl_rpm_name}" | sed -e "s/^\(.*\) \*\(.*\)/SHA512(\2)= \1/g" )
+			#fix: only read the checksum value, not checksum file format
+			checksum_local=$( cd ${repo_path} ; sha512sum -b "${dl_rpm_name}" | sed -r 's@.*([a-zA-Z0-9]{128}).*@\1@g')
 			if [ "${checksum_remote}" == "${checksum_local}" ]; then
 				fnBUFFER INFO 0 "${repo_name}: Local file matches given remote checksum: ${this_pkg_rpm_final_fpspec}"
 				fnBUFFER INFO 1 "${repo_name}: Already have file: ${dl_rpm_name}"
-				fnBUFFER INFO 2 "${repo_name}: Already have file: ${checksum_local}"
+				fnBUFFER INFO 2 "${repo_name}: Already have file: ${dl_rpm_name} :: ${checksum_local}"
 			else
 				fnBUFFER INFO 2 "${repo_name}: Local file DOES NOT match expected checksum: ${this_pkg_rpm_final_fpspec}"
 				fnGetThePkg "${repo_name}" "${dl_link}" "${dl_rpm_name}" "${checksum_remote}"
